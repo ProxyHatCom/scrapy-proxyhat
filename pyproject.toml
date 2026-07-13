@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "scrapy-proxyhat"
+version = "0.1.0"
+description = "Scrapy downloader middleware for ProxyHat residential proxies — rotation, geo-targeting, sticky sessions."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [{ name = "ProxyHat", email = "support@proxyhat.com" }]
+keywords = ["scrapy", "proxy", "residential-proxy", "proxyhat", "web-scraping", "middleware", "rotating-proxy"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Scrapy",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP",
+]
+dependencies = ["scrapy>=2.11", "proxyhat>=0.2.0"]
+
+[project.urls]
+Homepage = "https://proxyhat.com"
+Documentation = "https://docs.proxyhat.com"
+Repository = "https://github.com/ProxyHatCom/scrapy-proxyhat"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "ruff>=0.4"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scrapy_proxyhat"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
