@@ -3,13 +3,16 @@ from types import SimpleNamespace
 import pytest
 from scrapy.exceptions import NotConfigured
 from scrapy.http import Request
-from scrapy.utils.test import get_crawler
+from scrapy.settings import Settings
 
 from scrapy_proxyhat import ProxyHatMiddleware
 
 
 def make_mw(settings):
-    return ProxyHatMiddleware.from_crawler(get_crawler(settings_dict=settings))
+    # A minimal crawler stub — from_crawler only needs `.settings` (avoids the
+    # Twisted reactor requirement of scrapy.utils.test.get_crawler).
+    crawler = SimpleNamespace(settings=Settings(settings))
+    return ProxyHatMiddleware.from_crawler(crawler)
 
 
 class TestConfig:
