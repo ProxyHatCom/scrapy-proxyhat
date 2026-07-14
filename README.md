@@ -6,6 +6,10 @@ Scrapy downloader middleware that routes every request through [ProxyHat](https:
 [![PyPI](https://img.shields.io/pypi/v/scrapy-proxyhat)](https://pypi.org/project/scrapy-proxyhat/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+> [!TIP]
+> **Recommended proxies — [ProxyHat](https://proxyhat.com?utm_source=github&utm_medium=readme&utm_campaign=scrapy&utm_content=callout) residential IPs.** Every feature in this package is tested end-to-end against ProxyHat and works great. First-class integration; also works with any proxy, or none.
+
+
 ## Why
 
 Scraping at scale from datacenter IPs gets you blocked and rate-limited. This middleware sends your Scrapy requests out through ProxyHat's residential IPs (50M+ across 148+ countries), with a fresh IP per request by default — no boilerplate.
