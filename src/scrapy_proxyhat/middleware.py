@@ -37,6 +37,11 @@ class ProxyHatMiddleware:
         self.username = username
         self.password = password
         self.targeting = targeting
+        # When sticky is configured at the settings level, build the connection URL
+        # once (minting a single sticky sid) and reuse it for every non-overridden
+        # request so the whole crawl pins one exit IP until the TTL expires. The SDK
+        # randomizes the sid on each call, so a stable sid means caching the URL.
+        self._sticky_url = self._build_url(targeting) if targeting.get("sticky") else None
 
     @classmethod
     def from_crawler(cls, crawler: Crawler) -> ProxyHatMiddleware:
@@ -67,17 +72,27 @@ class ProxyHatMiddleware:
             raise NotConfigured("scrapy-proxyhat: no usable ProxyHat sub-user found (suspended or out of traffic).")
         return chosen.proxy_username, chosen.proxy_password
 
+    def _build_url(self, targeting: dict[str, Any]) -> str:
+        kwargs = {key: value for key, value in targeting.items() if value is not None}
+        # Credentials live in the URL; Scrapy's HttpProxyMiddleware (priority 750,
+        # runs after this one) moves them into the Proxy-Authorization header.
+        return build_connection_url(username=self.username, password=self.password, **kwargs)
+
     def process_request(self, request: Request, spider: Spider) -> None:
         if request.meta.get("proxy"):
             return  # an explicit proxy is already set — don't override it
 
         targeting = dict(self.targeting)
+        overridden = False
         for key in _TARGETING_KEYS:
             override = request.meta.get(f"proxyhat_{key}")
             if override is not None:
                 targeting[key] = override
+                overridden = True
 
-        kwargs = {key: value for key, value in targeting.items() if value is not None}
-        # Credentials live in the URL; Scrapy's HttpProxyMiddleware (priority 750,
-        # runs after this one) moves them into the Proxy-Authorization header.
-        request.meta["proxy"] = build_connection_url(username=self.username, password=self.password, **kwargs)
+        # Reuse the cached settings-level sticky URL (stable sid → pinned exit IP)
+        # unless this request overrides targeting, in which case build it fresh.
+        if self._sticky_url is not None and not overridden:
+            request.meta["proxy"] = self._sticky_url
+        else:
+            request.meta["proxy"] = self._build_url(targeting)

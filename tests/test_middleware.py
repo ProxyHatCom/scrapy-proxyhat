@@ -46,6 +46,16 @@ class TestProcessRequest:
         mw.process_request(req, None)
         assert "-ttl-30m" in req.meta["proxy"]
 
+    def test_settings_sticky_pins_same_ip_across_requests(self):
+        # Settings-level sticky must pin one exit IP for the whole crawl: two
+        # different requests through the same middleware get the identical sid.
+        mw = make_mw({"PROXYHAT_USERNAME": "ph-1", "PROXYHAT_PASSWORD": "pw", "PROXYHAT_STICKY": "30m"})
+        req1, req2 = Request("https://example.com/a"), Request("https://example.com/b")
+        mw.process_request(req1, None)
+        mw.process_request(req2, None)
+        assert "-sid-" in req1.meta["proxy"] and "-ttl-30m" in req1.meta["proxy"]
+        assert req1.meta["proxy"] == req2.meta["proxy"]  # same sid → same IP
+
     def test_does_not_override_explicit_proxy(self):
         mw = make_mw({"PROXYHAT_USERNAME": "ph-1", "PROXYHAT_PASSWORD": "pw"})
         req = Request("https://example.com", meta={"proxy": "http://other:1"})
